@@ -1,0 +1,11 @@
+api_url = "http://127.0.0.1:9090" # Mihomo API base URL
+api_secret = "your_mihomo_api_secret" # Mihomo API secret key
+groups_to_monitor = ["All Nodes"] # List of proxy group names to monitor
+interval_seconds = 15 # Monitoring interval (seconds)
+test_url = "https://www.gstatic.com/generate_204" # Latency test URL
+test_timeout_seconds = 5 # Latency test timeout (seconds)
+
+[prometheus]
+mode = "pull"  # "pull" or "push"
+push_url = "http://127.0.0.1:8428/api/v1/write" # Required only when mode = "push"
+listen_address = "0.0.0.0:9898" # Listen address and port for /metrics endpoint in pull mode

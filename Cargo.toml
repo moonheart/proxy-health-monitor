@@ -1,0 +1,16 @@
+[package]
+name = "proxy-health-monitor"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { version = "1.45.1", features = ["full"] }
+serde = { version = "1.0.219", features = ["derive"] }
+toml = "0.8.22"
+reqwest = { version = "0.12.18", features = ["json"] }
+prometheus = "0.13.4"
+warp = "0.3.7"
+log = "0.4.27"
+env_logger = "0.11.8"
+lazy_static = "1.5.0"
+prometheus-reqwest-remote-write = "0.3.0"
