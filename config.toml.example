@@ -4,6 +4,7 @@ groups_to_monitor = ["All Nodes"] # List of proxy group names to monitor
 interval_seconds = 15 # Monitoring interval (seconds)
 test_url = "https://www.gstatic.com/generate_204" # Latency test URL
 test_timeout_seconds = 5 # Latency test timeout (seconds)
+# reporter = "my-custom-reporter" # Optional: Reporter label for metrics, defaults to hostname if not set
 
 [prometheus]
 mode = "pull"  # "pull" or "push"

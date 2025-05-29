@@ -9,7 +9,7 @@ use std::sync::Arc;
 lazy_static! {
     pub static ref PROXY_DELAY_MS: GaugeVec = GaugeVec::new(
         Opts::new("proxy_delay_ms", "Proxy delay in milliseconds"),
-        &["group_name", "proxy_name"]
+        &["group_name", "proxy_name", "reporter", "proxy_type"]
     )
     .expect("metric can be created: proxy_delay_ms");
 }
@@ -22,6 +22,7 @@ pub fn update_proxy_metrics(
     proxies_response: &ProxiesResponse,
     monitored_groups: &[String],
     config_test_url: &str,
+    reporter: &str,
 ) {
     log::debug!("Updating Prometheus metrics for {} monitored groups.", monitored_groups.len());
 
@@ -57,12 +58,14 @@ pub fn update_proxy_metrics(
                         let delay_to_report = latest_delay.unwrap_or(0);
 
                         PROXY_DELAY_MS
-                            .with_label_values(&[group_name, &proxy_detail.name])
+                            .with_label_values(&[group_name, &proxy_detail.name, reporter, &proxy_detail.proxy_type])
                             .set(delay_to_report as f64);
                         log::debug!(
-                            "Set metric: group_name='{}', proxy_name='{}', delay_ms={}",
+                            "Set metric: group_name='{}', proxy_name='{}', reporter='{}', proxy_type='{}', delay_ms={}",
                             group_name,
                             proxy_detail.name,
+                            reporter,
+                            proxy_detail.proxy_type,
                             delay_to_report
                         );
                     } else {

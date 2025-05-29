@@ -18,6 +18,7 @@ pub struct Config {
     pub test_url: String,
     pub test_timeout_seconds: u64,
     pub prometheus: PrometheusConfig,
+    pub reporter: Option<String>,
 }
 
 impl Config {

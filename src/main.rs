@@ -15,18 +15,40 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     log::info!("Starting Mihomo Proxy Health Monitor...");
 
     // Load configuration
-    let app_config = match config::Config::load_config("config.toml") {
-        Ok(cfg) => Arc::new(cfg),
+    let mut cfg = match config::Config::load_config("config.toml") {
+        Ok(c) => c,
         Err(e) => {
             log::error!("Failed to load configuration from config.toml: {}", e);
-            // Attempt to create a default config.toml if it doesn't exist or is invalid
-            // For simplicity, we'll just exit here. A more robust app might create a default.
             eprintln!("Error: Could not load config.toml. Please ensure it exists and is valid.");
             eprintln!("Details: {}", e);
             std::process::exit(1);
         }
     };
-    log::info!("Configuration loaded successfully.");
+
+    if cfg.reporter.is_none() {
+        match hostname::get() {
+            Ok(h_os_str) => {
+                match h_os_str.into_string() {
+                    Ok(h_str) => {
+                        log::info!("Reporter not set in config, using hostname: {}", h_str);
+                        cfg.reporter = Some(h_str);
+                    }
+                    Err(_) => {
+                        log::warn!("Failed to convert hostname to String, reporter will be empty.");
+                        // cfg.reporter remains None or you could set a default fallback
+                        // For now, we'll leave it as None if conversion fails.
+                    }
+                }
+            }
+            Err(e) => {
+                log::warn!("Failed to get hostname: {}. Reporter will be empty.", e);
+                // cfg.reporter remains None
+            }
+        }
+    }
+
+    let app_config = Arc::new(cfg);
+    log::info!("Configuration loaded successfully. Reporter: {:?}", app_config.reporter);
 
     // Create Prometheus registry and register metrics
     let registry = Arc::new(Registry::new());
