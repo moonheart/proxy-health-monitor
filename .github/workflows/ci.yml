@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]  # 添加tag触发条件
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_test:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest, macos-arm64]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Build project
+      run: cargo build --release
+
+    - name: Run tests
+      run: cargo test --release
+
+  # 添加构建发布工件任务
+  build_release:
+    strategy:
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest, macos-arm64]
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        profile: minimal
+        override: true
+
+    - name: Build release binary
+      run: cargo build --release
+
+    - name: Rename binary
+      run: |
+        if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          mv target/release/proxy-health-monitor.exe proxy-health-monitor-windows-x64.exe
+        elif [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
+          mv target/release/proxy-health-monitor proxy-health-monitor-linux-x64
+        elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+          mv target/release/proxy-health-monitor proxy-health-monitor-macos-x64
+        elif [[ "${{ matrix.os }}" == "macos-arm64" ]]; then
+          mv target/release/proxy-health-monitor proxy-health-monitor-macos-arm64
+        fi
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: binary-${{ matrix.os }}
+        path: |
+          proxy-health-monitor-*
+        if-no-files-found: error
+
+  # 添加发布任务
+  release_publish:
+    if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    needs: build_release
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download all artifacts
+      uses: actions/download-artifact@v3
+      with:
+        path: artifacts
+
+    - name: Prepare release assets
+      run: |
+        mkdir release_assets
+        find artifacts -type f -exec cp {} release_assets \;
+        ls release_assets
+
+    - name: Upload to GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release_assets/*
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
