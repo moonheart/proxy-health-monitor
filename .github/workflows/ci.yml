@@ -2,10 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]  # 添加tag触发条件
-  pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   build_and_test:
