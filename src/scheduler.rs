@@ -53,8 +53,9 @@ pub async fn run_scheduler(config: Arc<Config>, registry: Arc<Registry>, http_cl
                 log::info!("Successfully fetched proxies info. Updating Prometheus metrics...");
                 prometheus_exporter::update_proxy_metrics(
                     &proxies_info,
-                    &config.groups_to_monitor,
+                    &config.groups_to_monitor,                    
                     &config.test_url,
+                    &config.reporter.as_deref().unwrap_or("unknown"),
                 );
 
                 if config.prometheus.mode == "push" {
