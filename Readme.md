@@ -2,6 +2,9 @@
 
 一个 systemd/Windows 服务，用于定期检查 Mihomo 代理的延迟。
 
+![image](https://github.com/user-attachments/assets/335e6143-7019-4e05-9fad-6d6d1a814759)
+
+
 ## 监控流程
 
 1. **发起延迟测试**
